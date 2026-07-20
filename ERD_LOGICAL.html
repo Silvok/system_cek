@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logical ERD Sistem Pengecekan dan Maintenance Aset</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --paper: #ffffff;
+            --ink: #172033;
+            --muted: #5f6f86;
+            --line: #334155;
+            --user: #dbeafe;
+            --user-border: #2563eb;
+            --asset: #dcfce7;
+            --asset-border: #16a34a;
+            --check: #fef3c7;
+            --check-border: #d97706;
+            --maint: #ffe4e6;
+            --maint-border: #e11d48;
+            --stock: #ede9fe;
+            --stock-border: #7c3aed;
+            --system: #e2e8f0;
+            --system-border: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .page {
+            min-width: 1660px;
+            padding: 28px;
+        }
+
+        .header {
+            width: 1600px;
+            margin: 0 auto 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 24px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+            max-width: 680px;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #334155;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .legend-dot {
+            width: 13px;
+            height: 13px;
+            border: 2px solid;
+            border-radius: 4px;
+        }
+
+        .canvas {
+            position: relative;
+            width: 1600px;
+            height: 1120px;
+            margin: 0 auto;
+            overflow: hidden;
+            background: var(--paper);
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .connector-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .connector {
+            fill: none;
+            stroke: var(--line);
+            stroke-width: 2;
+            opacity: 0.76;
+        }
+
+        .connector-soft {
+            stroke: #64748b;
+            stroke-dasharray: 7 7;
+            opacity: 0.52;
+        }
+
+        .section {
+            position: absolute;
+            z-index: 0;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+            background: rgba(248, 250, 252, 0.72);
+        }
+
+        .section-name {
+            position: absolute;
+            top: 10px;
+            left: 14px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .entity {
+            position: absolute;
+            z-index: 2;
+            width: 235px;
+            background: #fff;
+            border: 2px solid;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .entity.user {
+            background: var(--user);
+            border-color: var(--user-border);
+        }
+
+        .entity.asset {
+            background: var(--asset);
+            border-color: var(--asset-border);
+        }
+
+        .entity.check {
+            background: var(--check);
+            border-color: var(--check-border);
+        }
+
+        .entity.maint {
+            background: var(--maint);
+            border-color: var(--maint-border);
+        }
+
+        .entity.stock {
+            background: var(--stock);
+            border-color: var(--stock-border);
+        }
+
+        .entity.system {
+            background: var(--system);
+            border-color: var(--system-border);
+        }
+
+        .title {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.16);
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .attrs {
+            margin: 0;
+            padding: 9px 12px 11px;
+            list-style: none;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #1f2937;
+        }
+
+        .attrs li {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .attrs li:last-child {
+            border-bottom: 0;
+        }
+
+        .key {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .tag {
+            color: #475569;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .label {
+            position: absolute;
+            z-index: 3;
+            padding: 3px 8px;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            color: #334155;
+            font-size: 11px;
+            line-height: 1.2;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .note {
+            position: absolute;
+            left: 26px;
+            right: 26px;
+            bottom: 20px;
+            z-index: 4;
+            padding: 12px 15px;
+            border-left: 4px solid #2563eb;
+            background: #eff6ff;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .print-tip {
+            width: 1600px;
+            margin: 14px auto 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .page {
+                padding: 0;
+                transform: scale(0.65);
+                transform-origin: top left;
+            }
+
+            .header,
+            .print-tip {
+                display: none;
+            }
+
+            .canvas {
+                border: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="header">
+            <div>
+                <h1>Logical ERD Sistem Pengecekan dan Maintenance Aset</h1>
+                <p class="subtitle">Versi logical menggunakan entitas bisnis, atribut utama, dan relasi konseptual tanpa detail fisik database.</p>
+            </div>
+            <div class="legend" aria-label="Legenda warna entitas">
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--user-border); background: var(--user);"></span>Pengguna</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--asset-border); background: var(--asset);"></span>Aset</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--check-border); background: var(--check);"></span>Pengecekan</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--maint-border); background: var(--maint);"></span>Maintenance</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--stock-border); background: var(--stock);"></span>Suku cadang</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--system-border); background: var(--system);"></span>Sistem</span>
+            </div>
+        </header>
+
+        <section class="canvas" aria-label="Logical ERD">
+            <div class="section" style="left: 24px; top: 24px; width: 620px; height: 258px;">
+                <div class="section-name">Pengguna dan akses</div>
+            </div>
+            <div class="section" style="left: 690px; top: 24px; width: 884px; height: 330px;">
+                <div class="section-name">Aset dan komponen</div>
+            </div>
+            <div class="section" style="left: 24px; top: 330px; width: 960px; height: 494px;">
+                <div class="section-name">Pengecekan aset</div>
+            </div>
+            <div class="section" style="left: 1018px; top: 380px; width: 556px; height: 416px;">
+                <div class="section-name">Maintenance</div>
+            </div>
+            <div class="section" style="left: 24px; top: 850px; width: 1000px; height: 194px;">
+                <div class="section-name">Suku cadang</div>
+            </div>
+            <div class="section" style="left: 1060px; top: 850px; width: 514px; height: 194px;">
+                <div class="section-name">Audit dan notifikasi</div>
+            </div>
+
+            <svg class="connector-layer" viewBox="0 0 1600 1120" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                    <marker id="crow" markerWidth="14" markerHeight="12" refX="13" refY="6" orient="auto">
+                        <path d="M 1 1 L 13 6 L 1 11" fill="none" stroke="#334155" stroke-width="1.8"></path>
+                    </marker>
+                </defs>
+
+                <path class="connector" marker-end="url(#crow)" d="M 260 142 L 380 142"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 260 196 L 380 196"></path>
+
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 145 250 C 145 318 145 360 145 410"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 145 250 C 345 312 720 248 762 184"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 145 250 C 970 302 1180 380 1180 430"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 995 160 L 1095 160"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 995 220 C 1020 330 1100 380 1180 420"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 260 500 L 350 500"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 145 574 L 145 660"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 260 728 L 350 728"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 468 582 L 468 660"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 585 728 L 672 728"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 907 725 C 980 690 1060 610 1100 550"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 1328 520 L 1328 630"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1218 720 C 1030 802 840 852 804 902"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1328 760 C 1120 850 850 880 804 920"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 260 940 L 350 940"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 585 940 L 670 940"></path>
+
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 145 250 C 1070 920 1140 920 1145 920"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 1180 760 C 1240 835 1270 876 1270 900"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 1328 760 C 1400 840 1435 875 1435 900"></path>
+            </svg>
+
+            <div class="label" style="left: 292px; top: 116px;">M:N</div>
+            <div class="label" style="left: 292px; top: 170px;">1:N</div>
+            <div class="label" style="left: 206px; top: 374px;">1:N</div>
+            <div class="label" style="left: 1005px; top: 135px;">1:N</div>
+            <div class="label" style="left: 272px; top: 474px;">1:N</div>
+            <div class="label" style="left: 606px; top: 704px;">1:N</div>
+            <div class="label" style="left: 954px; top: 650px;">menghasilkan</div>
+            <div class="label" style="left: 1348px; top: 590px;">1:N</div>
+            <div class="label" style="left: 287px; top: 914px;">1:N</div>
+            <div class="label" style="left: 600px; top: 914px;">1:N</div>
+            <div class="label" style="left: 895px; top: 836px;">digunakan</div>
+
+            <article class="entity user" style="left: 50px; top: 86px;">
+                <div class="title">Pengguna</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Pengguna</span><span class="tag">identifier</span></li>
+                    <li><span>Nama</span><span class="tag"></span></li>
+                    <li><span>Email</span><span class="tag"></span></li>
+                    <li><span>Password</span><span class="tag"></span></li>
+                    <li><span>Departemen</span><span class="tag"></span></li>
+                    <li><span>Status Akun</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity user" style="left: 380px; top: 66px;">
+                <div class="title">Role</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Role</span><span class="tag">identifier</span></li>
+                    <li><span>Nama Role</span><span class="tag"></span></li>
+                    <li><span>Hak Akses</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity user" style="left: 380px; top: 168px;">
+                <div class="title">Notifikasi</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Notifikasi</span><span class="tag">identifier</span></li>
+                    <li><span>Jenis Notifikasi</span><span class="tag"></span></li>
+                    <li><span>Isi Notifikasi</span><span class="tag"></span></li>
+                    <li><span>Status Baca</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity asset" style="left: 760px; top: 86px;">
+                <div class="title">Mesin / Aset</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Aset</span><span class="tag">identifier</span></li>
+                    <li><span>Kode Aset</span><span class="tag"></span></li>
+                    <li><span>Nama Aset</span><span class="tag"></span></li>
+                    <li><span>Jenis Aset</span><span class="tag"></span></li>
+                    <li><span>Status Aset</span><span class="tag"></span></li>
+                    <li><span>Kondisi Terakhir</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity asset" style="left: 1095px; top: 86px;">
+                <div class="title">Komponen Aset</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Komponen</span><span class="tag">identifier</span></li>
+                    <li><span>Nama Komponen</span><span class="tag"></span></li>
+                    <li><span>Part Number</span><span class="tag"></span></li>
+                    <li><span>Jadwal Ganti</span><span class="tag"></span></li>
+                    <li><span>Status Komponen</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity check" style="left: 50px; top: 410px;">
+                <div class="title">Daftar Pengecekan</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Daftar</span><span class="tag">identifier</span></li>
+                    <li><span>Nama Item</span><span class="tag"></span></li>
+                    <li><span>Operator</span><span class="tag"></span></li>
+                    <li><span>Deskripsi</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity check" style="left: 350px; top: 410px;">
+                <div class="title">Komponen Checklist</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Checklist</span><span class="tag">identifier</span></li>
+                    <li><span>Nama Komponen</span><span class="tag"></span></li>
+                    <li><span>Standar Pengecekan</span><span class="tag"></span></li>
+                    <li><span>Frekuensi Pengecekan</span><span class="tag"></span></li>
+                    <li><span>Catatan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity check" style="left: 50px; top: 660px;">
+                <div class="title">Pengecekan</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Pengecekan</span><span class="tag">identifier</span></li>
+                    <li><span>Tanggal Pengecekan</span><span class="tag"></span></li>
+                    <li><span>Operator Pelaksana</span><span class="tag"></span></li>
+                    <li><span>Status Pengecekan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity check" style="left: 350px; top: 660px;">
+                <div class="title">Detail Pengecekan</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Detail</span><span class="tag">identifier</span></li>
+                    <li><span>Komponen Diperiksa</span><span class="tag"></span></li>
+                    <li><span>Status Hasil</span><span class="tag"></span></li>
+                    <li><span>Keterangan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity maint" style="left: 672px; top: 660px;">
+                <div class="title">Laporan Maintenance</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Laporan</span><span class="tag">identifier</span></li>
+                    <li><span>Deskripsi Masalah</span><span class="tag"></span></li>
+                    <li><span>Status Maintenance</span><span class="tag"></span></li>
+                    <li><span>Teknisi</span><span class="tag"></span></li>
+                    <li><span>Foto Sebelum/Sesudah</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity maint" style="left: 1098px; top: 430px;">
+                <div class="title">Permintaan Maintenance</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Permintaan</span><span class="tag">identifier</span></li>
+                    <li><span>Nomor Request</span><span class="tag"></span></li>
+                    <li><span>Aset Terkait</span><span class="tag"></span></li>
+                    <li><span>Deskripsi Masalah</span><span class="tag"></span></li>
+                    <li><span>Tingkat Urgensi</span><span class="tag"></span></li>
+                    <li><span>Status Request</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity maint" style="left: 1208px; top: 630px;">
+                <div class="title">Log Maintenance</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Log</span><span class="tag">identifier</span></li>
+                    <li><span>Teknisi Pelaksana</span><span class="tag"></span></li>
+                    <li><span>Waktu Mulai</span><span class="tag"></span></li>
+                    <li><span>Waktu Selesai</span><span class="tag"></span></li>
+                    <li><span>Catatan Pekerjaan</span><span class="tag"></span></li>
+                    <li><span>Status Pekerjaan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity stock" style="left: 50px; top: 898px;">
+                <div class="title">Kategori Suku Cadang</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Kategori</span><span class="tag">identifier</span></li>
+                    <li><span>Nama Kategori</span><span class="tag"></span></li>
+                    <li><span>Deskripsi</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity stock" style="left: 350px; top: 898px;">
+                <div class="title">Suku Cadang</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Suku Cadang</span><span class="tag">identifier</span></li>
+                    <li><span>Kode Suku Cadang</span><span class="tag"></span></li>
+                    <li><span>Nama Suku Cadang</span><span class="tag"></span></li>
+                    <li><span>Satuan</span><span class="tag"></span></li>
+                    <li><span>Stok</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity stock" style="left: 670px; top: 898px;">
+                <div class="title">Transaksi Suku Cadang</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Transaksi</span><span class="tag">identifier</span></li>
+                    <li><span>Jenis Transaksi</span><span class="tag"></span></li>
+                    <li><span>Jumlah</span><span class="tag"></span></li>
+                    <li><span>Stok Sebelum/Sesudah</span><span class="tag"></span></li>
+                    <li><span>Status Approval</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="entity system" style="left: 1145px; top: 898px;">
+                <div class="title">Audit Trail</div>
+                <ul class="attrs">
+                    <li><span class="key">ID Audit</span><span class="tag">identifier</span></li>
+                    <li><span>Aktivitas</span><span class="tag"></span></li>
+                    <li><span>Pengguna</span><span class="tag"></span></li>
+                    <li><span>Objek Terkait</span><span class="tag"></span></li>
+                    <li><span>Waktu Aktivitas</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <aside class="note">
+                Logical ERD ini tidak menggunakan nama tabel fisik, tipe data SQL, atau tabel penghubung teknis secara eksplisit. Entitas disajikan berdasarkan objek bisnis yang dipahami pengguna sistem, sedangkan relasi M:N seperti Pengguna-Role dan penggunaan suku cadang ditunjukkan secara konseptual.
+            </aside>
+        </section>
+
+        <p class="print-tip">Tip: buka file ini di browser, lalu gunakan screenshot atau Print to PDF untuk memasukkan logical ERD ke skripsi.</p>
+    </main>
+</body>
+</html>

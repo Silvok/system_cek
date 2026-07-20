@@ -1,0 +1,80 @@
+digraph UseCaseSistemRingkas {
+    graph [
+        rankdir=LR,
+        bgcolor="white",
+        pad=0.35,
+        nodesep=0.65,
+        ranksep=1.0,
+        splines=ortho,
+        overlap=false,
+        fontname="Arial",
+        label="Use Case Diagram Sistem Cek",
+        labelloc=t,
+        fontsize=24
+    ];
+
+    node [
+        fontname="Arial",
+        fontsize=12,
+        color="#334155",
+        penwidth=1.5
+    ];
+
+    edge [
+        fontname="Arial",
+        fontsize=10,
+        color="#475569",
+        arrowsize=0.7,
+        arrowhead=none
+    ];
+
+    SuperAdmin [shape=box, style="rounded,filled", fillcolor="#eff6ff", label="Super Admin"];
+    Admin [shape=box, style="rounded,filled", fillcolor="#eff6ff", label="Admin"];
+    Operator [shape=box, style="rounded,filled", fillcolor="#f0fdf4", label="Operator"];
+    Teknisi [shape=box, style="rounded,filled", fillcolor="#fff7ed", label="Teknisi"];
+
+    subgraph cluster_app {
+        label="Sistem Cek";
+        labelloc=t;
+        fontsize=18;
+        fontname="Arial";
+        color="#94a3b8";
+        penwidth=1.8;
+        style="rounded";
+        margin=24;
+
+        UC01 [shape=ellipse, label="Login dan\nLogout"];
+        UC02 [shape=ellipse, label="Administrasi\nPengguna"];
+        UC03 [shape=ellipse, label="Manajemen Mesin\n dan Checklist"];
+        UC04 [shape=ellipse, label="Pengecekan"];
+        UC05 [shape=ellipse, label="Maintenance"];
+        UC06 [shape=ellipse, label="Suku Cadang"];
+        UC07 [shape=ellipse, label="Monitoring dan\nLaporan"];
+    }
+
+    SuperAdmin -> UC01;
+    SuperAdmin -> UC02;
+    SuperAdmin -> UC03;
+    SuperAdmin -> UC06;
+    SuperAdmin -> UC07;
+
+    Admin -> UC01;
+    Admin -> UC02;
+    Admin -> UC03;
+    Admin -> UC05;
+    Admin -> UC06;
+    Admin -> UC07;
+
+    Operator -> UC01;
+    Operator -> UC04;
+    Operator -> UC05;
+    Operator -> UC07;
+
+    Teknisi -> UC01;
+    Teknisi -> UC05;
+    Teknisi -> UC06;
+    Teknisi -> UC07;
+
+    UC04 -> UC05 [style=dashed, arrowhead=open, xlabel="<<extend>>"];
+    UC05 -> UC06 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+}

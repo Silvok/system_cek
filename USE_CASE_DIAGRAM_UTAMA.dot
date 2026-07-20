@@ -1,0 +1,146 @@
+graph UseCaseSistemUtama {
+    graph [
+        layout=neato,
+        bgcolor="white",
+        pad=0.35,
+        splines=polyline,
+        overlap=true,
+        outputorder=edgesfirst,
+        fontname="Arial",
+        label="Use Case Diagram Sistem Cek",
+        labelloc=t,
+        fontsize=24
+    ];
+
+    node [
+        fontname="Arial",
+        fontsize=11,
+        color="#334155",
+        penwidth=1.4,
+        pin=true
+    ];
+
+    edge [
+        fontname="Arial",
+        fontsize=9,
+        color="#475569",
+        penwidth=1.1
+    ];
+
+    Operator [shape=plaintext, fontname="Courier New", fontsize=11, pos="0,740!", label="  O\n /|\\\n / \\\nOperator"];
+    Teknisi [shape=plaintext, fontname="Courier New", fontsize=11, pos="0,220!", label="  O\n /|\\\n / \\\nTeknisi"];
+    Admin [shape=plaintext, fontname="Courier New", fontsize=11, pos="1400,740!", label="  O\n /|\\\n / \\\nAdmin"];
+    SuperAdmin [shape=plaintext, fontname="Courier New", fontsize=11, pos="1400,220!", label="  O\n /|\\\n / \\\nSuper Admin"];
+
+    BoxSystem [shape=rect, style="rounded", color="#64748b", penwidth=1.3, fixedsize=true, width=17.2, height=10.6, pos="700,460!", label=""];
+    TitleSystem [shape=plaintext, fontsize=16, pos="700,880!", label="Sistem Cek"];
+
+    BoxOperator [shape=rect, style="rounded", color="#94a3b8", penwidth=1.1, fixedsize=true, width=3.1, height=4.2, pos="300,675!", label=""];
+    TitleOperator [shape=plaintext, fontsize=14, pos="300,850!", label="Fitur Operator"];
+
+    BoxTeknisi [shape=rect, style="rounded", color="#94a3b8", penwidth=1.1, fixedsize=true, width=3.1, height=4.2, pos="300,220!", label=""];
+    TitleTeknisi [shape=plaintext, fontsize=14, pos="300,390!", label="Fitur Teknisi"];
+
+    BoxAdmin [shape=rect, style="rounded", color="#94a3b8", penwidth=1.1, fixedsize=true, width=3.2, height=4.1, pos="1100,655!", label=""];
+    TitleAdmin [shape=plaintext, fontsize=14, pos="1100,820!", label="Fitur Admin"];
+
+    BoxSuperAdmin [shape=rect, style="rounded", color="#94a3b8", penwidth=1.1, fixedsize=true, width=3.2, height=2.2, pos="1100,260!", label=""];
+    TitleSuperAdmin [shape=plaintext, fontsize=14, pos="1100,350!", label="Manajemen Sistem"];
+
+    subgraph cluster_app {
+        label="";
+        color="#64748b";
+        penwidth=1.4;
+        style="rounded";
+        margin=18;
+
+        subgraph cluster_operator {
+            label="Fitur Operator";
+            color="#94a3b8";
+            penwidth=1.2;
+            style="rounded";
+            OP1 [shape=ellipse, pos="300,780!", label="Input Hasil\nPengecekan"];
+            OP2 [shape=ellipse, pos="300,710!", label="Lihat Jadwal &\nChecklist"];
+            OP3 [shape=ellipse, pos="300,640!", label="Unggah Foto\nKondisi Aset"];
+            OP4 [shape=ellipse, pos="300,570!", label="Buat Permintaan\nMaintenance"];
+        }
+
+        subgraph cluster_teknisi {
+            label="Fitur Teknisi";
+            color="#94a3b8";
+            penwidth=1.2;
+            style="rounded";
+            TK1 [shape=ellipse, pos="300,330!", label="Perbarui Status\nMaintenance"];
+            TK2 [shape=ellipse, pos="300,260!", label="Lihat Laporan\nKerusakan"];
+            TK4 [shape=ellipse, pos="300,190!", label="Perbarui Stok\nSuku Cadang"];
+            TK3 [shape=ellipse, pos="300,120!", label="Catat Penggunaan\nSuku Cadang"];
+        }
+
+        Reset [shape=ellipse, pos="700,810!", label="Reset Password"];
+        Login [shape=ellipse, pos="700,580!", label="Login"];
+        Dashboard [shape=ellipse, pos="700,450!", label="Lihat Dashboard"];
+        Logout [shape=ellipse, pos="700,320!", label="Logout"];
+
+        subgraph cluster_admin {
+            label="Fitur Admin";
+            color="#94a3b8";
+            penwidth=1.2;
+            style="rounded";
+            AD1 [shape=ellipse, pos="1100,745!", label="Kelola Master\nMesin"];
+            AD2 [shape=ellipse, pos="1100,675!", label="Kelola Daftar\nPengecekan"];
+            AD3 [shape=ellipse, pos="1100,605!", label="Lihat Laporan\nMaintenance"];
+            AD4 [shape=ellipse, pos="1100,535!", label="Export Laporan\nPDF / Excel"];
+        }
+
+        subgraph cluster_superadmin {
+            label="Manajemen Sistem";
+            color="#94a3b8";
+            penwidth=1.2;
+            style="rounded";
+            SA1 [shape=ellipse, pos="1100,300!", label="Kelola Role &\nHak Akses"];
+            SA2 [shape=ellipse, pos="1100,220!", label="Kelola Akun\nPengguna"];
+        }
+    }
+
+    Operator -- OP1;
+    Operator -- OP2;
+    Operator -- OP3;
+    Operator -- OP4;
+    Operator -- Login;
+    Operator -- Dashboard;
+    Operator -- Logout;
+
+    Teknisi -- TK1;
+    Teknisi -- TK2;
+    Teknisi -- TK3;
+    Teknisi -- TK4;
+    Teknisi -- Login;
+    Teknisi -- Dashboard;
+    Teknisi -- Logout;
+
+    Admin -- AD1;
+    Admin -- AD2;
+    Admin -- AD3;
+    Admin -- AD4;
+    Admin -- Login;
+    Admin -- Dashboard;
+    Admin -- Logout;
+
+    SuperAdmin -- SA1;
+    SuperAdmin -- SA2;
+    SuperAdmin -- Login;
+    SuperAdmin -- Dashboard;
+    SuperAdmin -- Logout;
+
+    Reset -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<extend>>"];
+    OP1 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    OP2 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    OP4 -- TK2 [style=dashed, arrowhead=open, dir=forward, xlabel="<<extend>>"];
+    TK1 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    TK2 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    TK3 -- TK4 [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    AD3 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    AD4 -- AD3 [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    SA1 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+    SA2 -- Login [style=dashed, arrowhead=open, dir=forward, xlabel="<<include>>"];
+}

@@ -13,9 +13,13 @@ return new class extends Migration
     public function up(): void
     {
         // Drop foreign key terlebih dahulu
-        Schema::table('pengecekan_mesins', function (Blueprint $table) {
-            $table->dropForeign(['mesin_id']);
-        });
+        try {
+            Schema::table('pengecekan_mesins', function (Blueprint $table) {
+                $table->dropForeign(['mesin_id']);
+            });
+        } catch (\Throwable $e) {
+            // Foreign key mungkin tidak ada pada database yang sudah terlanjur termigrasi sebagian.
+        }
 
         // Drop unique index yang bermasalah (jika ada)
         try {
@@ -25,7 +29,9 @@ return new class extends Migration
         }
 
         // Tambahkan generated column untuk tanggal saja
-        DB::statement('ALTER TABLE pengecekan_mesins ADD COLUMN tanggal_only DATE AS (DATE(tanggal_pengecekan)) STORED');
+        if (! Schema::hasColumn('pengecekan_mesins', 'tanggal_only')) {
+            DB::statement('ALTER TABLE pengecekan_mesins ADD COLUMN tanggal_only DATE AS (DATE(tanggal_pengecekan)) STORED');
+        }
 
         // Buat unique index pada mesin_id dan tanggal_only
         Schema::table('pengecekan_mesins', function (Blueprint $table) {
@@ -33,9 +39,13 @@ return new class extends Migration
         });
 
         // Tambahkan kembali foreign key
-        Schema::table('pengecekan_mesins', function (Blueprint $table) {
-            $table->foreign('mesin_id')->references('id')->on('mesins')->onDelete('cascade');
-        });
+        try {
+            Schema::table('pengecekan_mesins', function (Blueprint $table) {
+                $table->foreign('mesin_id')->references('id')->on('mesins')->onDelete('cascade');
+            });
+        } catch (\Throwable $e) {
+            // Foreign key mungkin sudah ada.
+        }
     }
 
     /**
@@ -44,9 +54,13 @@ return new class extends Migration
     public function down(): void
     {
         // Drop foreign key
-        Schema::table('pengecekan_mesins', function (Blueprint $table) {
-            $table->dropForeign(['mesin_id']);
-        });
+        try {
+            Schema::table('pengecekan_mesins', function (Blueprint $table) {
+                $table->dropForeign(['mesin_id']);
+            });
+        } catch (\Throwable $e) {
+            // Foreign key mungkin tidak ada.
+        }
 
         // Drop unique index
         Schema::table('pengecekan_mesins', function (Blueprint $table) {

@@ -1,0 +1,123 @@
+digraph UseCaseSistem {
+    graph [
+        rankdir=LR,
+        bgcolor="white",
+        pad=0.35,
+        nodesep=0.55,
+        ranksep=0.9,
+        splines=ortho,
+        overlap=false,
+        fontname="Arial",
+        label="Use Case Diagram Sistem Cek",
+        labelloc=t,
+        fontsize=24
+    ];
+
+    node [
+        fontname="Arial",
+        fontsize=11,
+        color="#334155",
+        penwidth=1.4
+    ];
+
+    edge [
+        fontname="Arial",
+        fontsize=9,
+        color="#475569",
+        arrowsize=0.7,
+        arrowhead=none
+    ];
+
+    SuperAdmin [shape=box, style="rounded,filled", fillcolor="#eff6ff", label="Super Admin"];
+    Admin [shape=box, style="rounded,filled", fillcolor="#eff6ff", label="Admin"];
+    Operator [shape=box, style="rounded,filled", fillcolor="#f0fdf4", label="Operator"];
+    Teknisi [shape=box, style="rounded,filled", fillcolor="#fff7ed", label="Teknisi"];
+
+    subgraph cluster_app {
+        label="Sistem Cek";
+        labelloc=t;
+        fontsize=18;
+        fontname="Arial";
+        color="#94a3b8";
+        penwidth=1.6;
+        style="rounded";
+        margin=20;
+
+        UC01 [shape=ellipse, label="Login dan\nLogout"];
+        UC02 [shape=ellipse, label="Kelola\nPengguna"];
+        UC03 [shape=ellipse, label="Kelola Role dan\nPermission"];
+        UC04 [shape=ellipse, label="Kelola Master\nMesin"];
+        UC05 [shape=ellipse, label="Kelola Komponen\nMesin"];
+        UC06 [shape=ellipse, label="Kelola Daftar\nPengecekan"];
+        UC07 [shape=ellipse, label="Melakukan\nPengecekan"];
+        UC08 [shape=ellipse, label="Melihat Riwayat\nPengecekan"];
+        UC09 [shape=ellipse, label="Membuat Laporan\nMaintenance Otomatis"];
+        UC10 [shape=ellipse, label="Menangani Laporan\nMaintenance"];
+        UC11 [shape=ellipse, label="Membuat Permintaan\nMaintenance"];
+        UC12 [shape=ellipse, label="Mencatat Log\nPerawatan"];
+        UC13 [shape=ellipse, label="Kelola\nSuku Cadang"];
+        UC14 [shape=ellipse, label="Catat Transaksi\nStok"];
+        UC15 [shape=ellipse, label="Lihat Audit\nTrail"];
+        UC16 [shape=ellipse, label="Lihat\nNotifikasi"];
+        UC17 [shape=ellipse, label="Lihat Dashboard\nMonitoring"];
+        UC18 [shape=ellipse, label="Kelola dan Export\nLaporan"];
+        UC19 [shape=ellipse, label="Sinkronisasi\nStatus Mesin"];
+        UC20 [shape=ellipse, label="Kirim Reminder\nPenggantian"];
+        UC21 [shape=ellipse, label="Audit Konsistensi\nStok"];
+    }
+
+    SuperAdmin -> UC01;
+    SuperAdmin -> UC02;
+    SuperAdmin -> UC03;
+    SuperAdmin -> UC04;
+    SuperAdmin -> UC05;
+    SuperAdmin -> UC06;
+    SuperAdmin -> UC08;
+    SuperAdmin -> UC13;
+    SuperAdmin -> UC14;
+    SuperAdmin -> UC15;
+    SuperAdmin -> UC16;
+    SuperAdmin -> UC17;
+    SuperAdmin -> UC18;
+
+    Admin -> UC01;
+    Admin -> UC02;
+    Admin -> UC04;
+    Admin -> UC05;
+    Admin -> UC06;
+    Admin -> UC08;
+    Admin -> UC10;
+    Admin -> UC11;
+    Admin -> UC13;
+    Admin -> UC14;
+    Admin -> UC15;
+    Admin -> UC16;
+    Admin -> UC17;
+    Admin -> UC18;
+    Admin -> UC19;
+    Admin -> UC20;
+    Admin -> UC21;
+
+    Operator -> UC01;
+    Operator -> UC07;
+    Operator -> UC08;
+    Operator -> UC11;
+    Operator -> UC16;
+    Operator -> UC17;
+
+    Teknisi -> UC01;
+    Teknisi -> UC10;
+    Teknisi -> UC11;
+    Teknisi -> UC12;
+    Teknisi -> UC14;
+    Teknisi -> UC16;
+    Teknisi -> UC17;
+
+    UC07 -> UC09 [style=dashed, arrowhead=open, xlabel="<<extend>>"];
+    UC10 -> UC14 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+    UC11 -> UC19 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+    UC12 -> UC14 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+    UC12 -> UC15 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+    UC13 -> UC14 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+    UC20 -> UC16 [style=dashed, arrowhead=open, xlabel="<<include>>"];
+}

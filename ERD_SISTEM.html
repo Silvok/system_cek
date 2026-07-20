@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ERD Sistem Pengecekan dan Maintenance Aset</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --paper: #ffffff;
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #334155;
+            --blue: #dbeafe;
+            --blue-border: #2563eb;
+            --green: #dcfce7;
+            --green-border: #16a34a;
+            --amber: #fef3c7;
+            --amber-border: #d97706;
+            --rose: #ffe4e6;
+            --rose-border: #e11d48;
+            --violet: #ede9fe;
+            --violet-border: #7c3aed;
+            --slate: #e2e8f0;
+            --slate-border: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .page {
+            min-width: 1880px;
+            padding: 28px;
+        }
+
+        .header {
+            margin: 0 auto 18px;
+            width: 1820px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+            line-height: 1.2;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            max-width: 760px;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #334155;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .legend-dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 4px;
+            border: 2px solid;
+            background: white;
+        }
+
+        .canvas {
+            position: relative;
+            margin: 0 auto;
+            width: 1820px;
+            height: 1260px;
+            overflow: hidden;
+            background: var(--paper);
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .connector-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .connector {
+            fill: none;
+            stroke: var(--line);
+            stroke-width: 2;
+            opacity: 0.78;
+        }
+
+        .connector-soft {
+            stroke: #64748b;
+            stroke-dasharray: 6 6;
+            opacity: 0.56;
+        }
+
+        .card {
+            position: absolute;
+            z-index: 2;
+            width: 245px;
+            background: #fff;
+            border: 2px solid;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .card.user {
+            background: var(--blue);
+            border-color: var(--blue-border);
+        }
+
+        .card.master {
+            background: var(--green);
+            border-color: var(--green-border);
+        }
+
+        .card.checking {
+            background: var(--amber);
+            border-color: var(--amber-border);
+        }
+
+        .card.maintenance {
+            background: var(--rose);
+            border-color: var(--rose-border);
+        }
+
+        .card.stock {
+            background: var(--violet);
+            border-color: var(--violet-border);
+        }
+
+        .card.system {
+            background: var(--slate);
+            border-color: var(--slate-border);
+        }
+
+        .card-title {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.16);
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        .attrs {
+            margin: 0;
+            padding: 9px 12px 11px;
+            list-style: none;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #1f2937;
+        }
+
+        .attrs li {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .attrs li:last-child {
+            border-bottom: 0;
+        }
+
+        .key {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .tag {
+            color: #475569;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .label {
+            position: absolute;
+            z-index: 3;
+            padding: 3px 7px;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            color: #334155;
+            font-size: 11px;
+            line-height: 1.2;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .section {
+            position: absolute;
+            z-index: 0;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+            background: rgba(248, 250, 252, 0.72);
+        }
+
+        .section-name {
+            position: absolute;
+            top: 10px;
+            left: 14px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .note {
+            position: absolute;
+            left: 28px;
+            right: 28px;
+            bottom: 22px;
+            z-index: 4;
+            padding: 12px 15px;
+            border-left: 4px solid #2563eb;
+            background: #eff6ff;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .print-tip {
+            margin: 14px auto 0;
+            width: 1820px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .page {
+                padding: 0;
+                transform: scale(0.58);
+                transform-origin: top left;
+            }
+
+            .header,
+            .print-tip {
+                display: none;
+            }
+
+            .canvas {
+                border: 0;
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="header">
+            <div>
+                <h1>ERD Sistem Pengecekan dan Maintenance Aset</h1>
+                <p class="subtitle">Diagram visual berdasarkan tabel utama dan relasi proses bisnis pada sistem.</p>
+            </div>
+            <div class="legend" aria-label="Legenda warna entitas">
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--blue-border); background: var(--blue);"></span>Pengguna</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--green-border); background: var(--green);"></span>Master aset</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--amber-border); background: var(--amber);"></span>Pengecekan</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--rose-border); background: var(--rose);"></span>Maintenance</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--violet-border); background: var(--violet);"></span>Suku cadang</span>
+                <span class="legend-item"><span class="legend-dot" style="border-color: var(--slate-border); background: var(--slate);"></span>Sistem</span>
+            </div>
+        </header>
+
+        <section class="canvas" aria-label="Diagram ERD">
+            <div class="section" style="left: 24px; top: 24px; width: 760px; height: 300px;">
+                <div class="section-name">Pengguna dan hak akses</div>
+            </div>
+            <div class="section" style="left: 824px; top: 24px; width: 956px; height: 432px;">
+                <div class="section-name">Master mesin dan request maintenance</div>
+            </div>
+            <div class="section" style="left: 24px; top: 360px; width: 1080px; height: 546px;">
+                <div class="section-name">Checklist dan hasil pengecekan</div>
+            </div>
+            <div class="section" style="left: 1140px; top: 500px; width: 640px; height: 540px;">
+                <div class="section-name">Suku cadang dan histori stok</div>
+            </div>
+            <div class="section" style="left: 824px; top: 930px; width: 956px; height: 250px;">
+                <div class="section-name">Audit dan notifikasi</div>
+            </div>
+
+            <svg class="connector-layer" viewBox="0 0 1820 1260" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                    <marker id="crow" markerWidth="14" markerHeight="12" refX="13" refY="6" orient="auto">
+                        <path d="M 1 1 L 13 6 L 1 11" fill="none" stroke="#334155" stroke-width="1.8"></path>
+                    </marker>
+                </defs>
+
+                <path class="connector" marker-end="url(#crow)" d="M 275 170 L 355 170"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 600 170 L 655 170"></path>
+
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 150 262 C 150 340 150 382 150 430"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 150 262 C 510 338 890 148 890 150"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 150 262 C 150 610 150 642 150 700"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 150 262 C 1080 382 1250 310 1250 318"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 150 262 C 1180 482 1504 438 1504 438"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 1115 150 L 1190 150"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1115 238 C 1130 300 1170 344 1190 365"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1435 380 L 1490 380"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1435 228 C 1455 292 1478 324 1490 340"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 275 524 L 362 524"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 150 610 L 150 700"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 275 780 L 362 780"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 485 650 L 485 700"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 615 780 L 690 780"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 815 800 C 930 820 1140 768 1140 690"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 1250 528 L 1250 590"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1612 510 C 1612 610 1612 686 1612 760"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1385 715 L 1490 715"></path>
+
+                <path class="connector" marker-end="url(#crow)" d="M 1040 1018 L 1170 1018"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1415 1018 L 1490 1018"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1292 890 L 1292 930"></path>
+                <path class="connector" marker-end="url(#crow)" d="M 1612 890 L 1612 930"></path>
+
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 1010 910 L 1010 965"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 1612 538 C 1720 640 1710 930 1610 960"></path>
+                <path class="connector connector-soft" marker-end="url(#crow)" d="M 150 262 C 940 1060 1460 1060 1500 1080"></path>
+            </svg>
+
+            <div class="label" style="left: 302px; top: 146px;">1..* role</div>
+            <div class="label" style="left: 604px; top: 146px;">1..* user</div>
+            <div class="label" style="left: 210px; top: 392px;">1..* daftar</div>
+            <div class="label" style="left: 202px; top: 670px;">1..* pengecekan</div>
+            <div class="label" style="left: 306px; top: 500px;">1..* komponen</div>
+            <div class="label" style="left: 305px; top: 756px;">1..* detail</div>
+            <div class="label" style="left: 640px; top: 756px;">menghasilkan</div>
+            <div class="label" style="left: 1130px; top: 125px;">1..* komponen</div>
+            <div class="label" style="left: 1132px; top: 328px;">1..* request</div>
+            <div class="label" style="left: 1440px; top: 355px;">1..* log</div>
+            <div class="label" style="left: 1176px; top: 984px;">1..* suku cadang</div>
+            <div class="label" style="left: 1425px; top: 994px;">1..* transaksi</div>
+            <div class="label" style="left: 1320px; top: 690px;">dipakai</div>
+            <div class="label" style="left: 1630px; top: 690px;">dipakai</div>
+
+            <article class="card user" style="left: 60px; top: 82px;">
+                <div class="card-title">users</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>name</span><span class="tag"></span></li>
+                    <li><span>email</span><span class="tag">unique</span></li>
+                    <li><span>password</span><span class="tag"></span></li>
+                    <li><span>employee_id</span><span class="tag"></span></li>
+                    <li><span>department</span><span class="tag"></span></li>
+                    <li><span>is_active</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card user" style="left: 355px; top: 112px;">
+                <div class="card-title">model_has_roles</div>
+                <ul class="attrs">
+                    <li><span class="key">role_id</span><span class="tag">FK</span></li>
+                    <li><span class="key">model_id</span><span class="tag">FK</span></li>
+                    <li><span>model_type</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card user" style="left: 655px; top: 92px;">
+                <div class="card-title">roles</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>name</span><span class="tag"></span></li>
+                    <li><span>guard_name</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card master" style="left: 880px; top: 92px;">
+                <div class="card-title">mesins</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>kode_mesin</span><span class="tag">unique</span></li>
+                    <li><span>nama_mesin</span><span class="tag"></span></li>
+                    <li><span>jenis_mesin</span><span class="tag"></span></li>
+                    <li><span>serial_number</span><span class="tag"></span></li>
+                    <li><span>status</span><span class="tag"></span></li>
+                    <li><span>user_id</span><span class="tag">FK</span></li>
+                </ul>
+            </article>
+
+            <article class="card master" style="left: 1190px; top: 82px;">
+                <div class="card-title">m_components</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>nama_komponen</span><span class="tag"></span></li>
+                    <li><span>part_number</span><span class="tag"></span></li>
+                    <li><span>jadwal_ganti_bulan</span><span class="tag"></span></li>
+                    <li><span>status_komponen</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card maintenance" style="left: 1190px; top: 318px;">
+                <div class="card-title">m_requests</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>request_number</span><span class="tag">unique</span></li>
+                    <li><span>mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>komponen_id</span><span class="tag">FK</span></li>
+                    <li><span>created_by</span><span class="tag">FK</span></li>
+                    <li><span>urgency_level</span><span class="tag"></span></li>
+                    <li><span>status</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card maintenance" style="left: 1490px; top: 318px;">
+                <div class="card-title">m_logs</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>m_request_id</span><span class="tag">FK</span></li>
+                    <li><span>teknisi_id</span><span class="tag">FK</span></li>
+                    <li><span>tanggal_mulai</span><span class="tag"></span></li>
+                    <li><span>tanggal_selesai</span><span class="tag"></span></li>
+                    <li><span>catatan_teknisi</span><span class="tag"></span></li>
+                    <li><span>status</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card checking" style="left: 60px; top: 430px;">
+                <div class="card-title">daftar_pengecekan</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>nama_mesin</span><span class="tag"></span></li>
+                    <li><span>user_id</span><span class="tag">FK</span></li>
+                    <li><span>deskripsi</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card checking" style="left: 370px; top: 430px;">
+                <div class="card-title">komponen_daftar_pengecekan</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>nama_komponen</span><span class="tag"></span></li>
+                    <li><span>standar</span><span class="tag"></span></li>
+                    <li><span>frekuensi</span><span class="tag"></span></li>
+                    <li><span>catatan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card checking" style="left: 60px; top: 700px;">
+                <div class="card-title">pengecekan_mesins</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>user_id</span><span class="tag">FK</span></li>
+                    <li><span>tanggal_pengecekan</span><span class="tag"></span></li>
+                    <li><span>status</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card checking" style="left: 370px; top: 700px;">
+                <div class="card-title">detail_pengecekan_daftar</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>pengecekan_mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>komponen_mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>status_sesuai</span><span class="tag"></span></li>
+                    <li><span>keterangan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card maintenance" style="left: 690px; top: 700px;">
+                <div class="card-title">maintenance_reports</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>detail_pengecekan_mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>komponen_mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>issue_description</span><span class="tag"></span></li>
+                    <li><span>status</span><span class="tag"></span></li>
+                    <li><span>teknisi_id</span><span class="tag">FK</span></li>
+                </ul>
+            </article>
+
+            <article class="card stock" style="left: 1170px; top: 930px;">
+                <div class="card-title">spare_parts</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>category_id</span><span class="tag">FK</span></li>
+                    <li><span>kode_suku_cadang</span><span class="tag"></span></li>
+                    <li><span>nama_suku_cadang</span><span class="tag"></span></li>
+                    <li><span>satuan</span><span class="tag"></span></li>
+                    <li><span>stok</span><span class="tag"></span></li>
+                    <li><span>stok_minimal</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card stock" style="left: 795px; top: 950px;">
+                <div class="card-title">spare_part_categories</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>name</span><span class="tag"></span></li>
+                    <li><span>description</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card stock" style="left: 1490px; top: 930px;">
+                <div class="card-title">spare_part_transactions</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>spare_part_id</span><span class="tag">FK</span></li>
+                    <li><span>user_id</span><span class="tag">FK</span></li>
+                    <li><span>tipe_transaksi</span><span class="tag"></span></li>
+                    <li><span>jumlah</span><span class="tag"></span></li>
+                    <li><span>status_approval</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card stock" style="left: 1140px; top: 590px;">
+                <div class="card-title">maintenance_report_spare_part</div>
+                <ul class="attrs">
+                    <li><span>maintenance_report_id</span><span class="tag">FK</span></li>
+                    <li><span>spare_part_id</span><span class="tag">FK</span></li>
+                    <li><span>jumlah_digunakan</span><span class="tag"></span></li>
+                    <li><span>catatan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card stock" style="left: 1490px; top: 660px;">
+                <div class="card-title">m_log_spare_parts</div>
+                <ul class="attrs">
+                    <li><span>m_log_id</span><span class="tag">FK</span></li>
+                    <li><span>spare_part_id</span><span class="tag">FK</span></li>
+                    <li><span>jumlah_digunakan</span><span class="tag"></span></li>
+                    <li><span>harga_satuan</span><span class="tag"></span></li>
+                    <li><span>catatan</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card system" style="left: 970px; top: 1060px;">
+                <div class="card-title">m_audits</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>mesin_id</span><span class="tag">FK</span></li>
+                    <li><span>m_request_id</span><span class="tag">FK</span></li>
+                    <li><span>m_log_id</span><span class="tag">FK</span></li>
+                    <li><span>user_id</span><span class="tag">FK</span></li>
+                    <li><span>action_type</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <article class="card system" style="left: 1490px; top: 1060px;">
+                <div class="card-title">notifications</div>
+                <ul class="attrs">
+                    <li><span class="key">id</span><span class="tag">PK</span></li>
+                    <li><span>type</span><span class="tag"></span></li>
+                    <li><span>notifiable_type</span><span class="tag"></span></li>
+                    <li><span>notifiable_id</span><span class="tag">FK</span></li>
+                    <li><span>data</span><span class="tag"></span></li>
+                    <li><span>read_at</span><span class="tag"></span></li>
+                </ul>
+            </article>
+
+            <aside class="note">
+                ERD ini menampilkan tabel utama yang berhubungan langsung dengan proses bisnis sistem. Tabel teknis framework seperti sessions, cache, jobs, dan password_reset_tokens tidak ditampilkan karena tidak merepresentasikan proses bisnis pengecekan dan maintenance aset.
+            </aside>
+        </section>
+
+        <p class="print-tip">Tip: buka file ini di browser, lalu gunakan zoom atau print to PDF untuk menyimpan diagram sebagai gambar/PDF.</p>
+    </main>
+</body>
+</html>
