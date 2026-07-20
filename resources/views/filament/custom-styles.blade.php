@@ -15,6 +15,55 @@
 <link rel="shortcut icon" href="{{ $faviconPng ?? $faviconIco }}">
 <link rel="apple-touch-icon" href="{{ $faviconPng ?? $faviconIco }}">
 
+<script>
+    (() => {
+        const setLightThemeAsDefault = () => {
+            try {
+                const savedTheme = localStorage.getItem('theme')
+
+                if (! savedTheme || savedTheme === 'system') {
+                    localStorage.setItem('theme', 'light')
+                    window.theme = 'light'
+                    document.documentElement.classList.remove('dark')
+                }
+            } catch (error) {
+                //
+            }
+        }
+
+        const closeUserMenu = () => {
+            if (! window.Alpine) {
+                return
+            }
+
+            document.querySelectorAll('.fi-user-menu').forEach((menu) => {
+                try {
+                    window.Alpine.$data(menu)?.close?.()
+                } catch (error) {
+                    //
+                }
+            })
+        }
+
+        setLightThemeAsDefault()
+
+        window.addEventListener('load', () => window.setTimeout(closeUserMenu, 50))
+        document.addEventListener('livewire:navigated', () => window.setTimeout(closeUserMenu, 50))
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.fi-user-menu') || event.target.closest('.fi-dropdown-panel')) {
+                return
+            }
+
+            closeUserMenu()
+        })
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeUserMenu()
+            }
+        })
+    })()
+</script>
+
 <style>
     /* Posisikan badge lebih dekat ke icon lonceng */
     .fi-topbar-database-notifications-btn {
@@ -60,6 +109,39 @@
             transform: scale(1.08);
             box-shadow: 0 3px 10px rgba(239, 68, 68, 0.6), 0 0 18px rgba(239, 68, 68, 0.5);
         }
+    }
+
+    .fi-topbar .fi-logo,
+    .fi-sidebar-header .fi-logo {
+        align-items: center;
+        color: #0f172a !important;
+        display: inline-flex !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        gap: 0.6rem;
+        letter-spacing: 0 !important;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .fi-topbar .fi-logo::before,
+    .fi-sidebar-header .fi-logo::before {
+        background: #ffffff url('{{ $brandLogo }}') center / 76% auto no-repeat;
+        border: 1px solid rgba(14, 165, 233, 0.18);
+        border-radius: 8px;
+        box-shadow: 0 6px 16px rgba(14, 165, 233, 0.13);
+        content: '';
+        display: inline-block;
+        flex: 0 0 auto;
+        height: 2rem;
+        width: 2rem;
+    }
+
+    .dark .fi-topbar .fi-logo,
+    .dark .fi-sidebar-header .fi-logo,
+    :root.dark .fi-topbar .fi-logo,
+    :root.dark .fi-sidebar-header .fi-logo {
+        color: #f8fafc !important;
     }
 
     .fi-simple-layout {
