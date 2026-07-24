@@ -94,6 +94,7 @@
         --system-ink: #18301a;
         --system-muted: #61724f;
         --system-shadow: rgba(30, 58, 32, 0.16);
+        --dashboard-top-card-height: 8.875rem;
     }
 
     /* Posisikan badge lebih dekat ke icon lonceng */
@@ -255,6 +256,7 @@
     }
 
     body.fi-body-has-navigation .fi-section,
+    body.fi-body-has-navigation .dashboard-top-card,
     body.fi-body-has-navigation .fi-card,
     body.fi-body-has-navigation .fi-ta-ctn,
     body.fi-body-has-navigation .fi-wi-stats-overview-stat {
@@ -263,6 +265,184 @@
         border-radius: 8px !important;
         box-shadow: 0 10px 28px rgba(30, 58, 32, 0.07), 0 1px 2px rgba(30, 58, 32, 0.04) !important;
         overflow: hidden;
+    }
+
+    body.fi-body-has-navigation .fi-page-content,
+    body.fi-body-has-navigation .fi-widgets,
+    body.fi-body-has-navigation .fi-wi {
+        min-width: 0;
+    }
+
+    body.fi-body-has-navigation .fi-wi-widget.dashboard-greeting-widget,
+    body.fi-body-has-navigation .fi-wi-widget.fi-account-widget {
+        box-sizing: border-box;
+        justify-self: stretch;
+        min-width: 0;
+        width: 100% !important;
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card,
+    body.fi-body-has-navigation .fi-account-widget > .fi-section {
+        box-sizing: border-box;
+        height: var(--dashboard-top-card-height) !important;
+        min-height: var(--dashboard-top-card-height) !important;
+        width: 100% !important;
+    }
+
+    @media (min-width: 768px) and (max-width: 1279.98px) {
+        body.fi-body-has-navigation .fi-wi-widget.dashboard-greeting-widget,
+        body.fi-body-has-navigation .fi-wi-widget.fi-account-widget {
+            grid-column: span 1 / span 1 !important;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        body.fi-body-has-navigation .fi-wi-widget.dashboard-greeting-widget,
+        body.fi-body-has-navigation .fi-wi-widget.fi-account-widget {
+            grid-column: span 2 / span 2 !important;
+        }
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card {
+        align-items: center;
+        border-top: 2px solid var(--system-gold) !important;
+        display: flex !important;
+        gap: 1.05rem;
+        padding: 1.35rem 1.75rem !important;
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card__icon {
+        align-items: center;
+        background: rgba(255, 253, 240, 0.92);
+        border: 1px solid rgba(63, 113, 51, 0.18);
+        border-radius: 9999px;
+        color: var(--system-green);
+        display: flex;
+        flex: 0 0 2.65rem;
+        height: 2.65rem;
+        justify-content: center;
+        width: 2.65rem;
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card__icon svg {
+        height: 1.35rem;
+        width: 1.35rem;
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card__main {
+        min-width: 0;
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card__title {
+        color: var(--system-green-dark) !important;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.25;
+        margin: 0;
+    }
+
+    body.fi-body-has-navigation .dashboard-greeting-card__quote {
+        color: var(--system-ink);
+        font-size: 0.93rem;
+        line-height: 1.35;
+        margin: 0.25rem 0 0;
+        overflow-wrap: anywhere;
+    }
+
+    body.fi-body-has-navigation .fi-account-widget .fi-section-content {
+        align-items: center !important;
+        display: flex !important;
+        min-height: calc(var(--dashboard-top-card-height) - 2px);
+        padding: 1.35rem 1.55rem !important;
+    }
+
+    body.fi-body-has-navigation .fi-account-widget-main {
+        min-width: 0;
+    }
+
+    body.fi-body-has-navigation .fi-account-widget-user-name,
+    body.fi-body-has-navigation .fi-account-widget-heading {
+        line-height: 1.25 !important;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat {
+        display: flex !important;
+        flex-direction: column;
+        min-height: 10.25rem;
+    }
+
+    body.fi-body-has-navigation .fi-wi:has(.fi-wi-stats-overview-stat) .fi-section {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    body.fi-body-has-navigation .fi-wi:has(.fi-wi-stats-overview-stat) .fi-section::before {
+        display: none;
+    }
+
+    body.fi-body-has-navigation .fi-wi:has(.fi-wi-stats-overview-stat) .fi-section-content-ctn,
+    body.fi-body-has-navigation .fi-wi:has(.fi-wi-stats-overview-stat) .fi-section-content {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-content {
+        display: flex !important;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+        padding: 1.35rem 1.55rem 1.25rem !important;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-label-ctn {
+        min-height: 2.35rem;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-label {
+        display: -webkit-box;
+        font-size: 0.93rem !important;
+        font-weight: 600 !important;
+        line-height: 1.32 !important;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-value {
+        font-size: 2rem !important;
+        font-weight: 700 !important;
+        line-height: 1.08 !important;
+        margin-top: 0.35rem !important;
+        min-height: 2.2rem;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-description {
+        align-items: flex-start !important;
+        display: flex !important;
+        font-size: 0.93rem !important;
+        gap: 0.4rem !important;
+        line-height: 1.35 !important;
+        margin-top: 0.65rem !important;
+        min-height: 2.55rem;
+        overflow-wrap: anywhere;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-description .fi-icon {
+        flex: 0 0 auto;
+        height: 1rem !important;
+        margin-top: 0.12rem;
+        width: 1rem !important;
+    }
+
+    body.fi-body-has-navigation .fi-wi-stats-overview-stat-chart {
+        flex: 0 0 auto;
+        height: 2rem !important;
+        margin-top: auto !important;
+        max-height: 2rem !important;
     }
 
     body.fi-body-has-navigation .fi-section-content-ctn,
