@@ -11,12 +11,20 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MLogsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query
+                ->with([
+                    'request:id,mesin_id,request_number',
+                    'request.mesin:id,nama_mesin',
+                    'teknisi:id,name',
+                ])
+                ->withCount('spareParts'))
             ->columns([
                 TextColumn::make('request.request_number')
                     ->label('No. Request')
@@ -60,11 +68,9 @@ class MLogsTable
                     })
                     ->toggleable(),
                     
-                TextColumn::make('spareParts')
+                TextColumn::make('spare_parts_count')
                     ->label('Suku Cadang')
-                    ->getStateUsing(function ($record) {
-                        return $record->spareParts->count();
-                    })
+                    ->numeric()
                     ->badge()
                     ->color('info')
                     ->suffix(' item')

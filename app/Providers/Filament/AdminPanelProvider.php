@@ -35,17 +35,17 @@ class AdminPanelProvider extends PanelProvider
             ->font('Inter')
             ->colors([
                 'primary' => [
-                    50 => '240, 249, 255',   // Biru sangat muda
-                    100 => '224, 242, 254',  // Biru lebih muda
-                    200 => '186, 230, 253',  // Biru cerah lembut
-                    300 => '125, 211, 252',  // Biru cerah
-                    400 => '56, 189, 248',   // Biru medium cerah
-                    500 => '14, 165, 233',   // Biru primer utama (elegan)
-                    600 => '2, 132, 199',    // Biru lebih gelap
-                    700 => '3, 105, 161',    // Biru tua
-                    800 => '7, 89, 133',     // Biru sangat tua
-                    900 => '12, 74, 110',    // Biru gelap
-                    950 => '8, 47, 73',      // Biru sangat gelap
+                    50 => '246, 250, 239',
+                    100 => '230, 240, 216',
+                    200 => '198, 220, 180',
+                    300 => '151, 190, 132',
+                    400 => '99, 150, 80',
+                    500 => '63, 113, 51',
+                    600 => '52, 96, 43',
+                    700 => '41, 79, 36',
+                    800 => '30, 58, 32',
+                    900 => '24, 48, 26',
+                    950 => '14, 30, 15',
                 ],
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\PengecekanMesin;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class TrenPengecekanChart extends ChartWidget
@@ -11,6 +12,8 @@ class TrenPengecekanChart extends ChartWidget
     protected ?string $heading = 'Tren Pengecekan 7 Hari Terakhir';
     
     protected static ?int $sort = 6;
+
+    protected static bool $isLazy = false;
 
     protected int | string | array $columnSpan = ['md' => 1, 'xl' => 2];
 
@@ -27,16 +30,24 @@ class TrenPengecekanChart extends ChartWidget
     {
         $data = [];
         $labels = [];
-        
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i);
+
+        $startDate = now()->subDays(6)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        $countsByDate = PengecekanMesin::query()
+            ->where('tanggal_pengecekan', '>=', $startDate)
+            ->where('tanggal_pengecekan', '<=', $endDate)
+            ->where('status', 'selesai')
+            ->selectRaw('DATE(tanggal_pengecekan) as tanggal, COUNT(*) as total')
+            ->groupBy(DB::raw('DATE(tanggal_pengecekan)'))
+            ->pluck('total', 'tanggal');
+
+        for ($i = 0; $i <= 6; $i++) {
+            $date = $startDate->copy()->addDays($i);
+            $dateKey = $date->toDateString();
+
             $labels[] = $date->translatedFormat('d M');
-            
-            $count = PengecekanMesin::whereDate('tanggal_pengecekan', '=', $date->format('Y-m-d'))
-                ->where('status', 'selesai')
-                ->count();
-            
-            $data[] = $count;
+            $data[] = (int) ($countsByDate[$dateKey] ?? 0);
         }
 
         return [

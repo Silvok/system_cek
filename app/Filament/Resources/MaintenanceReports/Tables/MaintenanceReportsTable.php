@@ -10,12 +10,18 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MaintenanceReportsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+                'mesin:id,nama_mesin',
+                'komponenMesin:id,nama_komponen',
+                'teknisi:id,name',
+            ]))
             ->columns([
                 TextColumn::make('mesin.nama_mesin')
                     ->label('Daftar Pengecekan')

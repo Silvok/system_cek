@@ -12,24 +12,38 @@ class MachineMaintenanceAlert extends BaseWidget
 {
     protected static ?int $sort = 5;
 
+    protected static bool $isLazy = false;
+
     protected static ?string $heading = 'Mesin & Komponen Perlu Perhatian';
 
     protected int | string | array $columnSpan = 'full';
+
+    protected ?string $pollingInterval = '60s';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 MComponent::query()
-                    ->with(['mesin'])
+                    ->select([
+                        'id',
+                        'mesin_id',
+                        'nama_komponen',
+                        'part_number',
+                        'status_komponen',
+                        'estimasi_tanggal_ganti_berikutnya',
+                        'nama_supplier',
+                        'harga_komponen',
+                    ])
+                    ->with(['mesin:id,kode_mesin,nama_mesin'])
                     ->where(function ($query) {
-                        $query->whereNotNull('estimasi_tanggal_ganti_berikutnya')
+                        $query
                             ->where(function ($q) {
-                                $q->where('estimasi_tanggal_ganti_berikutnya', '<', Carbon::now()->addDays(30));
-                            });
+                                $q->whereNotNull('estimasi_tanggal_ganti_berikutnya')
+                                    ->where('estimasi_tanggal_ganti_berikutnya', '<', Carbon::now()->addDays(30));
+                            })
+                            ->orWhereIn('status_komponen', ['perlu_ganti', 'rusak']);
                     })
-                    ->orWhere('status_komponen', 'perlu_ganti')
-                    ->orWhere('status_komponen', 'rusak')
                     ->orderByRaw("
                         CASE
                             WHEN status_komponen = 'rusak' THEN 1

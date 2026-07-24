@@ -11,16 +11,25 @@ class MachineStatusChart extends ChartWidget
 
     protected static ?int $sort = 7;
 
+    protected static bool $isLazy = false;
+
     protected int | string | array $columnSpan = ['md' => 1, 'xl' => 2];
 
     protected ?string $maxHeight = '300px';
 
+    protected ?string $pollingInterval = '60s';
+
     protected function getData(): array
     {
-        $aktif = Mesin::where('status', 'aktif')->count();
-        $nonaktif = Mesin::where('status', 'nonaktif')->count();
-        $maintenance = Mesin::where('status', 'maintenance')->count();
-        $rusak = Mesin::where('status', 'rusak')->count();
+        $statusCounts = Mesin::query()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $aktif = (int) ($statusCounts['aktif'] ?? 0);
+        $nonaktif = (int) (($statusCounts['nonaktif'] ?? 0) + ($statusCounts['non-aktif'] ?? 0));
+        $maintenance = (int) ($statusCounts['maintenance'] ?? 0);
+        $rusak = (int) ($statusCounts['rusak'] ?? 0);
 
         return [
             'datasets' => [

@@ -10,17 +10,23 @@ class SparePartsInventoryWidget extends BaseWidget
 {
     protected static ?int $sort = 4;
 
+    protected static bool $isLazy = false;
+
+    protected ?string $pollingInterval = '60s';
+
     protected function getStats(): array
     {
-        $totalSpareParts = SparePart::count();
-        
-        $lowStock = SparePart::whereColumn('stok', '<=', 'stok_minimum')->count();
-        
-        $outOfStock = SparePart::where('stok', 0)->count();
-        
-        $totalValue = SparePart::selectRaw('SUM(stok * harga_satuan) as total')
-            ->first()
-            ->total ?? 0;
+        $inventoryStats = SparePart::query()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN stok > 0 AND stok <= stok_minimum THEN 1 ELSE 0 END) as low_stock')
+            ->selectRaw('SUM(CASE WHEN stok <= 0 THEN 1 ELSE 0 END) as out_of_stock')
+            ->selectRaw('COALESCE(SUM(stok * harga_satuan), 0) as total_value')
+            ->first();
+
+        $totalSpareParts = (int) ($inventoryStats->total ?? 0);
+        $lowStock = (int) ($inventoryStats->low_stock ?? 0);
+        $outOfStock = (int) ($inventoryStats->out_of_stock ?? 0);
+        $totalValue = (float) ($inventoryStats->total_value ?? 0);
 
         $healthyStock = $totalSpareParts - $lowStock - $outOfStock;
 

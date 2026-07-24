@@ -21,6 +21,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -144,6 +145,10 @@ class SparePartTransactionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+                'sparePart:id,kode_suku_cadang,nama_suku_cadang,satuan,stok_minimum',
+                'user:id,name',
+            ]))
             ->columns([
                 TextColumn::make('nomor_transaksi')
                     ->label('No. Transaksi')

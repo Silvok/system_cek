@@ -10,12 +10,18 @@ use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MRequestsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+                'mesin:id,nama_mesin',
+                'komponen:id,nama_komponen',
+                'creator:id,name',
+            ]))
             ->columns([
                 TextColumn::make('request_number')
                     ->label('No. Request')

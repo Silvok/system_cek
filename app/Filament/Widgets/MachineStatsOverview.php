@@ -13,30 +13,44 @@ class MachineStatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
 
+    protected static bool $isLazy = false;
+
+    protected ?string $pollingInterval = '60s';
+
     protected function getStats(): array
     {
-        // Total mesin
-        $totalMesins = Mesin::count();
-        $activeMesins = Mesin::where('status', 'aktif')->count();
-        $maintenanceMesins = Mesin::where('status', 'maintenance')->count();
-        $brokenMesins = Mesin::where('status', 'rusak')->count();
+        $now = Carbon::now();
 
-        // Komponen perlu ganti
-        $componentNeedReplacement = MComponent::where('status_komponen', 'perlu_ganti')
-            ->orWhere('status_komponen', 'rusak')
-            ->count();
+        $machineStatusCounts = Mesin::query()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $componentOverdue = MComponent::whereNotNull('estimasi_tanggal_ganti_berikutnya')
-            ->where('estimasi_tanggal_ganti_berikutnya', '<', Carbon::now())
-            ->count();
+        $totalMesins = (int) $machineStatusCounts->sum();
+        $activeMesins = (int) ($machineStatusCounts['aktif'] ?? 0);
+        $maintenanceMesins = (int) ($machineStatusCounts['maintenance'] ?? 0);
+        $brokenMesins = (int) ($machineStatusCounts['rusak'] ?? 0);
 
-        // Request maintenance pending
-        $pendingRequests = MRequest::where('status', 'pending_approval')->count();
-        $inProgressRequests = MRequest::where('status', 'in_progress')->count();
+        $componentStats = MComponent::query()
+            ->selectRaw("SUM(CASE WHEN status_komponen IN ('perlu_ganti', 'rusak') THEN 1 ELSE 0 END) as need_replacement")
+            ->selectRaw('SUM(CASE WHEN estimasi_tanggal_ganti_berikutnya IS NOT NULL AND estimasi_tanggal_ganti_berikutnya < ? THEN 1 ELSE 0 END) as overdue', [$now])
+            ->first();
+
+        $componentNeedReplacement = (int) ($componentStats->need_replacement ?? 0);
+        $componentOverdue = (int) ($componentStats->overdue ?? 0);
+
+        $requestStatusCounts = MRequest::query()
+            ->whereIn('status', ['pending', 'approved', 'in_progress'])
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $pendingRequests = (int) (($requestStatusCounts['pending'] ?? 0) + ($requestStatusCounts['approved'] ?? 0));
+        $inProgressRequests = (int) ($requestStatusCounts['in_progress'] ?? 0);
 
         // Mesin mendekati penggantian (30 hari)
         $machinesNearReplacement = Mesin::whereNotNull('estimasi_penggantian')
-            ->whereBetween('estimasi_penggantian', [Carbon::now(), Carbon::now()->addDays(30)])
+            ->whereBetween('estimasi_penggantian', [$now, $now->copy()->addDays(30)])
             ->count();
 
         return [

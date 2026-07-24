@@ -3,30 +3,32 @@
 namespace App\Filament\Widgets;
 
 use App\Models\DaftarPengecekan;
+use App\Models\PengecekanMesin;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatusPengecekanOverview extends BaseWidget
 {
     protected static ?int $sort = 2;
+
+    protected static bool $isLazy = false;
     
-    protected ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '60s';
 
     protected function getStats(): array
     {
         $totalDaftarPengecekan = DaftarPengecekan::count();
-        
-        $sudahDicek = DaftarPengecekan::whereHas('pengecekan', function ($query) {
-            $query->whereDate('tanggal_pengecekan', today())
-                ->where('status', 'selesai');
-        })->count();
 
-        $sedangDicek = DaftarPengecekan::whereHas('pengecekan', function ($query) {
-            $query->whereDate('tanggal_pengecekan', today())
-                ->where('status', 'dalam_proses');
-        })->count();
+        $todayStatusCounts = PengecekanMesin::query()
+            ->where('tanggal_pengecekan', '>=', today()->startOfDay())
+            ->where('tanggal_pengecekan', '<=', today()->endOfDay())
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $tidakAdaData = $totalDaftarPengecekan - $sudahDicek - $sedangDicek;
+        $sudahDicek = (int) ($todayStatusCounts['selesai'] ?? 0);
+        $sedangDicek = (int) ($todayStatusCounts['dalam_proses'] ?? 0);
+        $tidakAdaData = max(0, $totalDaftarPengecekan - $sudahDicek - $sedangDicek);
 
         $persentaseSelesai = $totalDaftarPengecekan > 0 
             ? round(($sudahDicek / $totalDaftarPengecekan) * 100, 1) 

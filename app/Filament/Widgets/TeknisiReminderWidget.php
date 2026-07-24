@@ -11,6 +11,8 @@ class TeknisiReminderWidget extends Widget
     protected string $view = 'filament.widgets.teknisi-reminder-simple';
     
     protected static ?int $sort = -4;
+
+    protected static bool $isLazy = false;
     
     protected int | string | array $columnSpan = 'full';
 
@@ -31,22 +33,6 @@ class TeknisiReminderWidget extends Widget
             ->whereNull('teknisi_id')
             ->count();
 
-        // Cek maintenance yang sedang dikerjakan teknisi ini
-        $maintenanceSedangDikerjakan = MaintenanceReport::where('teknisi_id', $user->id)
-            ->where('status', 'in_progress')
-            ->count();
-
-        // Cek maintenance yang belum selesai (status selain 'completed') milik teknisi ini
-        $maintenanceBelumSelesai = MaintenanceReport::where('teknisi_id', $user->id)
-            ->where('status', '!=', 'completed')
-            ->whereNull('tanggal_selesai')
-            ->count();
-
-        $maintenanceSelesaiHariIni = MaintenanceReport::where('teknisi_id', $user->id)
-            ->where('status', 'completed')
-            ->whereDate('tanggal_selesai', today())
-            ->count();
-
         // Prioritas 1: Ada issue pending yang belum ada teknisi
         if ($maintenancePendingBelumDiambil > 0) {
             return [
@@ -57,7 +43,15 @@ class TeknisiReminderWidget extends Widget
             ];
         }
 
+        $technicianStats = MaintenanceReport::where('teknisi_id', $user->id)
+            ->selectRaw("SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress")
+            ->selectRaw("SUM(CASE WHEN status != 'completed' AND tanggal_selesai IS NULL THEN 1 ELSE 0 END) as unfinished")
+            ->selectRaw("SUM(CASE WHEN status = 'completed' AND tanggal_selesai >= ? AND tanggal_selesai <= ? THEN 1 ELSE 0 END) as completed_today", [today()->startOfDay(), today()->endOfDay()])
+            ->first();
+
         // Prioritas 2: Ada maintenance yang sedang dikerjakan
+        $maintenanceSedangDikerjakan = (int) ($technicianStats->in_progress ?? 0);
+
         if ($maintenanceSedangDikerjakan > 0) {
             return [
                 'type' => 'warning',
@@ -68,6 +62,8 @@ class TeknisiReminderWidget extends Widget
         }
 
         // Prioritas 3: Ada maintenance yang belum selesai (pending yang sudah di-assign ke teknisi ini)
+        $maintenanceBelumSelesai = (int) ($technicianStats->unfinished ?? 0);
+
         if ($maintenanceBelumSelesai > 0) {
             return [
                 'type' => 'warning',
@@ -79,6 +75,8 @@ class TeknisiReminderWidget extends Widget
         
         // Kondisi normal: Semua selesai
         // Hanya tampilkan terima kasih jika teknisi menyelesaikan maintenance hari ini
+        $maintenanceSelesaiHariIni = (int) ($technicianStats->completed_today ?? 0);
+
         if ($maintenanceSelesaiHariIni > 0) {
             return [
                 'type' => 'success',

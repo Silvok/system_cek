@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PengecekanMesins\Tables;
 
 use App\Models\DaftarPengecekan;
+use App\Models\PengecekanMesin;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -14,7 +15,15 @@ class PengecekanMesinsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(DaftarPengecekan::query())
+            ->query(
+                DaftarPengecekan::query()
+                    ->with([
+                        'operator:id,name',
+                        'pengecekan' => fn ($query) => self::scopeTodayChecks($query)
+                            ->select(['id', 'mesin_id', 'tanggal_pengecekan', 'status'])
+                            ->latest('tanggal_pengecekan'),
+                    ])
+            )
             ->columns([
                 TextColumn::make('nama_mesin')
                     ->label('Nama Mesin')
@@ -32,9 +41,7 @@ class PengecekanMesinsTable
                     ->label('Status Pengecekan')
                     ->badge()
                     ->state(function (DaftarPengecekan $record): string {
-                        $pengecekanHariIni = $record->pengecekan()
-                            ->whereDate('tanggal_pengecekan', today())
-                            ->first();
+                        $pengecekanHariIni = self::getTodayCheck($record);
 
                         if (!$pengecekanHariIni) {
                             return 'Tidak Ada Data Pengecekan/Tidak Dicek';
@@ -62,9 +69,7 @@ class PengecekanMesinsTable
                 TextColumn::make('waktu_pengecekan')
                     ->label('Waktu Pengecekan')
                     ->state(function (DaftarPengecekan $record): ?string {
-                        $pengecekanHariIni = $record->pengecekan()
-                            ->whereDate('tanggal_pengecekan', today())
-                            ->first();
+                        $pengecekanHariIni = self::getTodayCheck($record);
 
                         return $pengecekanHariIni?->tanggal_pengecekan?->format('H:i:s');
                     })
@@ -89,15 +94,13 @@ class PengecekanMesinsTable
 
                         return match ($status) {
                             'sudah' => $query->whereHas('pengecekan', function ($q) {
-                                $q->whereDate('tanggal_pengecekan', today())
-                                    ->where('status', 'selesai');
+                                self::scopeTodayChecks($q)->where('status', 'selesai');
                             }),
                             'sedang' => $query->whereHas('pengecekan', function ($q) {
-                                $q->whereDate('tanggal_pengecekan', today())
-                                    ->where('status', 'dalam_proses');
+                                self::scopeTodayChecks($q)->where('status', 'dalam_proses');
                             }),
                             'tidak_ada_data' => $query->whereDoesntHave('pengecekan', function ($q) {
-                                $q->whereDate('tanggal_pengecekan', today());
+                                self::scopeTodayChecks($q);
                             }),
                             default => $query,
                         };
@@ -106,9 +109,7 @@ class PengecekanMesinsTable
             ->recordActions([
                 ViewAction::make()
                     ->url(function (DaftarPengecekan $record): ?string {
-                        $pengecekan = $record->pengecekan()
-                            ->whereDate('tanggal_pengecekan', today())
-                            ->first();
+                        $pengecekan = self::getTodayCheck($record);
                         
                         if ($pengecekan) {
                             return route('filament.admin.resources.pengecekan-mesins.view', ['record' => $pengecekan->id]);
@@ -117,11 +118,25 @@ class PengecekanMesinsTable
                         return null;
                     })
                     ->visible(function (DaftarPengecekan $record): bool {
-                        return $record->pengecekan()
-                            ->whereDate('tanggal_pengecekan', today())
-                            ->exists();
+                        return self::getTodayCheck($record) !== null;
                     }),
             ])
-            ->poll('30s');
+            ->poll('60s');
+    }
+
+    private static function scopeTodayChecks($query)
+    {
+        return $query
+            ->where('tanggal_pengecekan', '>=', today()->startOfDay())
+            ->where('tanggal_pengecekan', '<=', today()->endOfDay());
+    }
+
+    private static function getTodayCheck(DaftarPengecekan $record): ?PengecekanMesin
+    {
+        if ($record->relationLoaded('pengecekan')) {
+            return $record->pengecekan->first();
+        }
+
+        return self::scopeTodayChecks($record->pengecekan())->first();
     }
 }

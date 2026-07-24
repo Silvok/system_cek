@@ -13,47 +13,46 @@ class MaintenancePerformanceWidget extends BaseWidget
 {
     protected static ?int $sort = 3;
 
+    protected static bool $isLazy = false;
+
+    protected ?string $pollingInterval = '60s';
+
     protected function getStats(): array
     {
         // Maintenance Reports this month
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        $completedThisMonth = MaintenanceReport::where('status', 'completed')
+        $reportStatusCounts = MaintenanceReport::query()
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->count();
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $inProgressThisMonth = MaintenanceReport::where('status', 'in_progress')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->count();
-
-        $pendingThisMonth = MaintenanceReport::where('status', 'pending')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->count();
+        $completedThisMonth = (int) ($reportStatusCounts['completed'] ?? 0);
+        $inProgressThisMonth = (int) ($reportStatusCounts['in_progress'] ?? 0);
+        $pendingThisMonth = (int) ($reportStatusCounts['pending'] ?? 0);
 
         // Average completion time (completed in last 30 days)
-        $completedRecent = MaintenanceReport::where('status', 'completed')
-            ->whereNotNull('created_at')
-            ->whereNotNull('updated_at')
+        $avgCompletionHours = MaintenanceReport::where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays(30))
-            ->get();
+            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at)) as average_hours')
+            ->value('average_hours');
 
-        $avgCompletionHours = 0;
-        if ($completedRecent->count() > 0) {
-            $totalHours = $completedRecent->sum(function ($report) {
-                return $report->created_at->diffInHours($report->updated_at);
-            });
-            $avgCompletionHours = round($totalHours / $completedRecent->count(), 1);
-        }
+        $avgCompletionHours = round((float) ($avgCompletionHours ?? 0), 1);
 
         // Log perawatan stats
-        $logsThisMonth = MLog::whereBetween('tanggal_mulai', [$startOfMonth, $endOfMonth])->count();
-        $logsCompleted = MLog::where('status', 'completed')
+        $logStats = MLog::query()
             ->whereBetween('tanggal_mulai', [$startOfMonth, $endOfMonth])
-            ->count();
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed")
+            ->first();
+
+        $logsThisMonth = (int) ($logStats->total ?? 0);
+        $logsCompleted = (int) ($logStats->completed ?? 0);
 
         // Spare parts usage this month
-        $sparePartsUsed = DB::table('m_log_spare_parts')
+        $sparePartsUsed = (int) DB::table('m_log_spare_parts')
             ->join('m_logs', 'm_log_spare_parts.m_log_id', '=', 'm_logs.id')
             ->whereBetween('m_logs.tanggal_mulai', [$startOfMonth, $endOfMonth])
             ->sum('m_log_spare_parts.jumlah_digunakan');

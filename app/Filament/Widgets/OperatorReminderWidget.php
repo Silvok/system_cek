@@ -11,6 +11,8 @@ class OperatorReminderWidget extends Widget
     protected string $view = 'filament.widgets.operator-reminder-simple';
     
     protected static ?int $sort = -4;
+
+    protected static bool $isLazy = false;
     
     protected int | string | array $columnSpan = 'full';
 
@@ -26,17 +28,13 @@ class OperatorReminderWidget extends Widget
     {
         $user = Auth::user();
         
-        $sudahMengecek = PengecekanMesin::where('user_id', $user->id)
-            ->whereDate('tanggal_pengecekan', today())
-            ->where('status', 'selesai')
-            ->exists();
-
         $jumlahDicek = PengecekanMesin::where('user_id', $user->id)
-            ->whereDate('tanggal_pengecekan', today())
+            ->where('tanggal_pengecekan', '>=', today()->startOfDay())
+            ->where('tanggal_pengecekan', '<=', today()->endOfDay())
             ->where('status', 'selesai')
             ->count();
 
-        if ($sudahMengecek) {
+        if ($jumlahDicek > 0) {
             return [
                 'type' => 'success',
                 'icon' => 'heroicon-o-check-circle',

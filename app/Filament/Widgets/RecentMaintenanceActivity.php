@@ -11,17 +11,31 @@ class RecentMaintenanceActivity extends BaseWidget
 {
     protected static ?int $sort = 9;
 
+    protected static bool $isLazy = false;
+
     protected static ?string $heading = 'Aktivitas Maintenance Terbaru';
 
     protected int | string | array $columnSpan = 'full';
+
+    protected ?string $pollingInterval = '60s';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 MRequest::query()
-                    ->with(['mesin', 'creator'])
-                    ->latest()
+                    ->select([
+                        'id',
+                        'request_number',
+                        'mesin_id',
+                        'created_by',
+                        'problema_deskripsi',
+                        'urgency_level',
+                        'status',
+                        'created_at',
+                    ])
+                    ->with(['mesin:id,nama_mesin', 'creator:id,name'])
+                    ->latest('created_at')
                     ->limit(10)
             )
             ->columns([
